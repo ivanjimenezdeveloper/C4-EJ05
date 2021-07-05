@@ -1,5 +1,5 @@
 const express = require("express");
-const { getLineas } = require("./API/tmb");
+const { getLineas, getInfoLinea } = require("./API/tmb");
 
 const app = express();
 const puerto = 5000;
@@ -17,7 +17,9 @@ app.get("/metro/lineas", async (req, res, next) => {
 
 app.get("/metro/linea/:linea", async (req, res, next) => {
   const { linea } = req.params;
-  res.send(`Mostrando las lineas de metro de la ${linea}`);
+  res.send(
+    (await getInfoLinea(linea)) || "No existe ninguna Línea con ese codigo"
+  );
 });
 
 app.use((req, res, next) => {

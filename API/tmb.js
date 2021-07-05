@@ -24,8 +24,62 @@ const getLineas = async () => {
   return paradasToReturn;
 };
 
-const getInfoLinea = async () => {};
+const comprobarLinea = async (linea, lineas) => {
+  const lineaReturn = lineas.filter((lineaApi) =>
+    linea.toLowerCase() === lineaApi.properties.NOM_LINIA.toLowerCase()
+      ? lineaApi
+      : ""
+  );
+
+  return lineaReturn || false;
+};
+
+const anyadirParadas = (paradas, lineasAPI) => {
+  const lineaToReturn = {};
+  const paradasFormateadas = [];
+
+  lineaToReturn.id = lineasAPI.properties.ID_LINIA;
+  lineaToReturn.linea = lineasAPI.properties.NOM_LINIA;
+  lineaToReturn.descripcion = lineasAPI.properties.DESC_LINIA;
+
+  for (const parada of paradas.features) {
+    const paradaTemp = {};
+    paradaTemp.id = parada.properties.ID_ESTACIO;
+    paradaTemp.nombre = parada.properties.NOM_ESTACIO;
+
+    paradasFormateadas.push(paradaTemp);
+  }
+
+  lineaToReturn.paradas = [...paradasFormateadas];
+  return lineaToReturn;
+};
+
+const getLineasCompletas = async () => {
+  const respuesta = await fetch(urlMetroAutenticado);
+  const paradas = await respuesta.json();
+
+  return paradas.features;
+};
+const getInfoLinea = async (lineaRespuesta) => {
+  const lineas = await getLineasCompletas();
+  const linea = await comprobarLinea(lineaRespuesta, lineas);
+
+  if (!linea || linea.length === 0) {
+    return false;
+  }
+  const primeraLinea = { ...linea[0] };
+
+  const respuesta = await fetch(
+    `${urlMetro}/${primeraLinea.properties.CODI_LINIA}/estacions?app_id=${apiId}&app_key=${apiKey}`
+  );
+  const paradas = await respuesta.json();
+
+  const lineasToReturn = { ...anyadirParadas(paradas, primeraLinea) };
+
+  return lineasToReturn;
+};
 
 module.exports = {
   getLineas,
+  getInfoLinea,
 };
