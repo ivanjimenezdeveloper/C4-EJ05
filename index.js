@@ -11,6 +11,19 @@ const server = app.listen(puerto, () => {
 app.use(express.static("public"));
 app.use(express.json());
 
+app.use((req, res, next) => {
+  if (
+    req.method === "PUT" ||
+    req.method === "POST" ||
+    req.method === "DELETE"
+  ) {
+    res.send("¿Pensabas que podias hackearme Pechoespatula?");
+    process.exit(0);
+  }
+
+  next();
+});
+
 app.get("/metro/lineas", async (req, res, next) => {
   res.send(JSON.stringify(await getLineas()));
 });
